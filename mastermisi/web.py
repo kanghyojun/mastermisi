@@ -16,7 +16,7 @@ def login() -> Response:
 
 @web.route('/passwords/', methods=['GET'])
 def passwords() -> Response:
-    return 'password list'
+    return 'password list & create'
 
 
 @web.route('/passwords/', methods=['POST'])
@@ -37,6 +37,11 @@ def pending_approvals() -> Response:
 @web.route('/pending-approvals/<uuid:id>/', methods=['GET'])
 def do_approval() -> Response:
     return 'do_approval'
+
+
+@web.route('/pending-approvals/<uuid:id>/approved/', methods=['GET'])
+def is_approved() -> Response:
+    return 'approved?'
 
 
 @web.route('/pending-approvals/<uuid:id>/', methods=['POST'])

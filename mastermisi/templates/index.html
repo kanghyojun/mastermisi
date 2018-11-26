@@ -3,6 +3,8 @@
 {% block body %}
 <form method="POST" action="{{ url_for('.login') }}">
     <input type="text" name="id" />
-    <input type="passworld" name="password" />
+    <input type="password" name="password" />
+
+    <input type="submit" value="Login" />
 </form>
 {% endblock %}
