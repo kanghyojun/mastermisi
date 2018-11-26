@@ -17,7 +17,7 @@ def login_required(handler: WebHandlerType) -> WebHandlerType:
     return deco
 
 
-def authorized(hanlder: WebHandlerType) -> WebHandlerType:
+def authorized(handler: WebHandlerType) -> WebHandlerType:
     @functools.wraps(handler)
     def deco(*args, **kwargs) -> Response:
         return handler(*args, **kwargs)
