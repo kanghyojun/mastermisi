@@ -53,8 +53,6 @@ def get_alembic_config(
                          '`sqlalchemy.engine.Engine`. '
                          '이어야 합니다. {!r} 입력됨.'.format(engine))
     cfg = Config()
-    # TODO: mastermisi:migraions로 하면 설정이 없다 그러고
-    #       mastermisi/migrations로 하면 디렉터리를 잘못 잡음
     cfg.set_main_option('script_location', 'mastermisi/migrations')
     cfg.set_main_option('sqlalchemy.url', database_url)
     cfg.set_main_option('url', database_url)
