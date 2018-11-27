@@ -1,7 +1,7 @@
 import datetime
 import hashlib
-import uuid
 from typing import Optional
+import uuid
 
 from cryptography.fernet import Fernet
 from sqlalchemy.dialects.postgresql import UUID
