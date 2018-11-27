@@ -1,5 +1,8 @@
+import datetime
+import time
+
 from flask import (Blueprint, Response, flash, redirect, render_template,
-                   request, url_for)
+                   request, session, url_for)
 from sqlalchemy.orm.exc import NoResultFound
 from wtforms.fields import PasswordField, StringField
 from wtforms.form import Form
@@ -23,6 +26,11 @@ class SignForm(Form):
     name = StringField(u'이름', validators=[input_required()])
 
     passphrase = PasswordField(u'암호', validators=[input_required()])
+
+
+def timestamp(offset=0):
+    time_ = datetime.datetime.utcnow() + datetime.timedelta(seconds=offset)
+    return int(time.mktime(time_.timetuple()))
 
 
 @web.route('/', methods=['GET'])
@@ -57,6 +65,8 @@ def login() -> Response:
         flash('이름 혹은 암호가 잘못되었습니다.')
         return redirect(url_for('.login_form'))
     else:
+        session['customer_id'] = customer.id
+        session['expired_at'] = timestamp(60 * 5)
         flash(f'{customer.name}님 안녕하세요!')
         return redirect(url_for('.accounts'))
 
@@ -75,12 +85,12 @@ def signup() -> Response:
     if not form.validate():
         flash('모든 값을 입력해주세요.')
         return redirect(url_for('.signup_form'))
-    if session.query(Customer).filter_by(name=form.name.data).first():
+    if db_session.query(Customer).filter_by(name=form.name.data).first():
         flash('이미 존재하는 이름입니다.')
         return redirect(url_for('.signup_form'))
     passphrase = Customer.create_passphrase(form.passphrase.data)
-    session.add(Customer(name=form.name.data, passphrase=passphrase))
-    session.commit()
+    db_session.add(Customer(name=form.name.data, passphrase=passphrase))
+    db_session.commit()
     flash('가입이 완료되었습니다.')
     return redirect(url_for('.index'))
 
