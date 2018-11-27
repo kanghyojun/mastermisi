@@ -25,7 +25,7 @@ class SignForm(Form):
 
     name = StringField(u'이름', validators=[input_required()])
 
-    passphrase = PasswordField(u'암호', validators=[input_required()])
+    passphrase = PasswordField(u'마스터 암호', validators=[input_required()])
 
 
 def timestamp(offset=0):
