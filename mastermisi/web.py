@@ -22,9 +22,15 @@ class SignForm(Form):
     passphrase = PasswordField(u'비밀 번호', validators=[input_required()])
 
 
-@web.route('/')
-def hello() -> Response:
-    """메인 페이지, 로그인 페이지 겸해서 있는 페이지."""
+@web.route('/', methods=['GET'])
+def index() -> Response:
+    """메인 페이지."""
+    return render_template('index.html')
+
+
+@web.route('/login/', methods=['GET'])
+def login_form() -> Response:
+    """로그인 페이지."""
     form = SignForm('로그인', url_for('.login'))
     return render_template('id_pass_form.html', form=form)
 
