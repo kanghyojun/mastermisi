@@ -2,6 +2,11 @@
 
 {% block body %}
 
-<p>계정 목록이 나와야 함.</p>
+<h1>계정 목록</h1>
+<ul>
+    {% for account in accounts %}
+        <li>{{ account.name }}</li>
+    {% endfor %}
+</ul>
 
 {% endblock %}
