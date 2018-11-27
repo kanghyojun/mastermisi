@@ -63,3 +63,13 @@ def fx_customer(fx_session: Session) -> Customer:
     fx_session.add(customer)
     fx_session.flush()
     return customer
+
+
+@fixture
+def fx_account(fx_customer: Customer, fx_session: Session) -> Customer:
+    account = fx_customer.create_account(
+        'theseedle.com', 'kndantes', 'kndantesisbest', passphrase='world'
+    )
+    fx_session.add(account)
+    fx_session.flush()
+    return account

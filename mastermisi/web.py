@@ -28,6 +28,18 @@ class SignForm(Form):
     passphrase = PasswordField(u'마스터 암호', validators=[input_required()])
 
 
+class AccountForm(Form):
+    """소유 계정을 입력하는 폼."""
+    host = StringField('호스트', validators=[input_required()])
+
+    name = StringField('이름', validators=[input_required()])
+
+    passphrase = PasswordField('암호', validators=[input_required()])
+
+    master_passphrase = PasswordField('마스터 암호',
+                                      validators=[input_required()])
+
+
 def timestamp(offset=0):
     time_ = datetime.datetime.utcnow() + datetime.timedelta(seconds=offset)
     return int(time.mktime(time_.timetuple()))
@@ -107,14 +119,36 @@ def accounts() -> Response:
     """계정 리스트를 보는 엔드포인트"""
     accounts = db_session.query(Account) \
                          .filter_by(customer_id=session['customer_id'])
-    return render_template('accounts.html', accounts=accounts)
+    form = AccountForm()
+    return render_template('accounts.html', accounts=accounts, form=form)
 
 
-@web.route('/passwords/', methods=['POST'])
+@web.route('/accounts/', methods=['POST'])
 @login_required
-def create_password() -> Response:
-    """패스워드를 생성하고, ``passwords``로 리디렉션함."""
-    return redirect(url_for('.passwords'))
+def account_new() -> Response:
+    """계정을 등록하는 엔드포인트"""
+    form = AccountForm(request.form)
+    if not form.validate():
+        flash('모든 값을 입력해주세요.')
+        return redirect(url_for('.accounts'))
+    customer = db_session.query(Customer) \
+                         .filter_by(id=session['customer_id']) \
+                         .one()
+    try:
+        account = customer.create_account(
+            form.host.data,
+            form.name.data,
+            form.passphrase.data,
+            passphrase=form.master_passphrase.data
+        )
+    except AssertionError:
+        flash('마스터 암호가 다릅니다.')
+        return redirect(url_for('.accounts'))
+    else:
+        db_session.add(account)
+        db_session.commit()
+        flash('등록이 완료되었습니다.')
+        return redirect(url_for('.accounts'))
 
 
 @web.route('/passwords/<int:id>/', methods=['POST'])
