@@ -8,6 +8,7 @@ Create Date: 2018-11-28 01:36:26.089499
 from alembic import op
 import sqlalchemy as sa  # noqa
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.schema import CheckConstraint
 
 # revision identifiers, used by Alembic.
 revision = 'e1825686f2ef'
@@ -22,7 +23,7 @@ def upgrade():
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
         sa.Column('name', sa.Unicode(), nullable=False),
-        sa.Column('passphrase', sa.BINARY(), nullable=False),
+        sa.Column('passphrase', sa.LargeBinary(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('name')
     )
@@ -33,7 +34,7 @@ def upgrade():
         sa.Column('customer_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('host', sa.Unicode(), nullable=False),
         sa.Column('name', sa.Unicode(), nullable=False),
-        sa.Column('passphrase', sa.BINARY(), nullable=False),
+        sa.Column('passphrase', sa.LargeBinary(), nullable=False),
         sa.ForeignKeyConstraint(['customer_id'], ['customer.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
@@ -46,7 +47,8 @@ def upgrade():
         sa.Column('approved_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('quiz_answer', sa.Unicode(), nullable=False),
         sa.ForeignKeyConstraint(['account_id'], ['account.id'], ),
-        sa.PrimaryKeyConstraint('id')
+        sa.PrimaryKeyConstraint('id'),
+        CheckConstraint('created_at < expired_at', name='ck_expired_at')
     )
 
 
