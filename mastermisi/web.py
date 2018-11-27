@@ -11,6 +11,11 @@ web: Blueprint = Blueprint(__name__, 'web', template_folder='./templates')
 
 
 class SignForm(Form):
+    """이름과 비밀번호를 입력하는 폼."""
+    def __init__(self, title: str, action: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.title = title
+        self.action = action
 
     name = StringField(u'이름', validators=[input_required()])
 
@@ -20,14 +25,14 @@ class SignForm(Form):
 @web.route('/')
 def hello() -> Response:
     """메인 페이지, 로그인 페이지 겸해서 있는 페이지."""
-    form = SignForm(request.form)
-    return render_template('index.html', form=form)
+    form = SignForm('로그인', url_for('.login'))
+    return render_template('id_pass_form.html', form=form)
 
 
 @web.route('/login/', methods=['POST'])
 def login() -> Response:
     """로그인을 시키고 패스워드 페이지를 볼 수 있게 인증함."""
-    form = SignForm(request.form)
+    form = SignForm('로그인', url_for('.login'), request.form)
     if not form.validate():
         flash('에러')
         return redirect(url_for('.passwords'))

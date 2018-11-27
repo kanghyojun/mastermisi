@@ -2,7 +2,8 @@
 
 {% block body %}
 
-<form method="POST" action="{{ url_for('.login') }}">
+<h1>{{ form.title }}</h1>
+<form method="POST" action="{{ form.action }}">
     {% for field in form %}
         {{ field.label }}
         {{ field }}
