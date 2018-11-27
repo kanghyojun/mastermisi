@@ -1,3 +1,4 @@
+import base64
 import datetime
 import hashlib
 from typing import Optional
@@ -22,6 +23,16 @@ def uuid4():
 def utcnow():
     """UTC 기준의 현재 시각을 반환합니다."""
     return datetime.datetime.now(datetime.timezone.utc)
+
+
+def span_bytes(bytes_: bytes, length: int = 32):
+    """바이트열을 암호화 키로 사용하기 위해 특정 크기로 조절합니다."""
+    if not (bytes_ and isinstance(bytes_, bytes)):
+        raise ValueError('bytes_는 1바이트 이상의 바이트열이어야 합니다.')
+    if len(bytes_) < 32:
+        return span_bytes(bytes_ * 2, length)
+    else:
+        return bytes_[:32]
 
 
 class Customer(Base):
@@ -49,7 +60,8 @@ class Customer(Base):
 
     def encrypt(self, plain_text: str, *, passphrase: str) -> bytes:
         assert self.match_passphrase(passphrase)
-        f = Fernet(passphrase.encode('utf-8'))
+        key = base64.urlsafe_b64encode(span_bytes(passphrase.encode('utf-8')))
+        f = Fernet(key)
         return f.encrypt(plain_text.encode('utf-8'))
 
     def create_account(self, host: str, name: str, plain_pass: str,
@@ -97,7 +109,8 @@ class Account(Base):
 
     def decrypt(self, *, passphrase: str) -> str:
         assert self.customer.match_passphrase(passphrase)
-        f = Fernet(passphrase.encode('utf-8'))
+        key = base64.urlsafe_b64encode(span_bytes(passphrase.encode('utf-8')))
+        f = Fernet(key)
         return f.decrypt(self.passphrase).decode('utf-8')
 
 
