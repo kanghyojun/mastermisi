@@ -5,6 +5,7 @@ from ormeasy.sqlalchemy import test_connection
 from pytest import fixture
 
 from mastermisi.app import App
+from mastermisi.entity import Customer
 from mastermisi.orm import Base, Session
 from mastermisi.wsgi import create_wsgi_app
 
@@ -53,3 +54,12 @@ def fx_session(fx_app: App, fx_connection) -> Session:
 @fixture
 def fx_wsgi_app(fx_app: App) -> Flask:
     return create_wsgi_app(fx_app)
+
+
+@fixture
+def fx_customer(fx_session: Session) -> Customer:
+    passphrase = Customer.create_passphrase('world')
+    customer = Customer(name='hello', passphrase=passphrase)
+    fx_session.add(customer)
+    fx_session.flush()
+    return customer
