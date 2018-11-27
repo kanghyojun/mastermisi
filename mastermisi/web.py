@@ -61,6 +61,30 @@ def login() -> Response:
         return redirect(url_for('.accounts'))
 
 
+@web.route('/signup/', methods=['GET'])
+def signup_form() -> Response:
+    """가입 페이지."""
+    form = SignForm('가입', url_for('.signup'))
+    return render_template('id_pass_form.html', form=form)
+
+
+@web.route('/signup/', methods=['POST'])
+def signup() -> Response:
+    """가입 처리 핸들러."""
+    form = SignForm('가입', url_for('.signup'), request.form)
+    if not form.validate():
+        flash('모든 값을 입력해주세요.')
+        return redirect(url_for('.signup_form'))
+    if session.query(Customer).filter_by(name=form.name.data).first():
+        flash('이미 존재하는 이름입니다.')
+        return redirect(url_for('.signup_form'))
+    passphrase = Customer.create_passphrase(form.passphrase.data)
+    session.add(Customer(name=form.name.data, passphrase=passphrase))
+    session.commit()
+    flash('가입이 완료되었습니다.')
+    return redirect(url_for('.index'))
+
+
 @web.route('/passcode/', methods=['GET'])
 @login_required
 def get_passcode() -> Response:
