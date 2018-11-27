@@ -43,4 +43,4 @@ def approve(id) -> Response:
     로그인 실패처리하게 하도록해야함.
 
     """
-    return jsonify(password='', id='')
+    return jsonify(password='dmadkrdmfemewk', id='admire93')
