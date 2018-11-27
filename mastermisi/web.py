@@ -8,7 +8,7 @@ from wtforms.fields import PasswordField, StringField
 from wtforms.form import Form
 from wtforms.validators import input_required
 
-from .entity import Customer
+from .entity import Account, Customer
 from .login import login_required
 from .orm import session as db_session
 
@@ -104,8 +104,10 @@ def get_passcode() -> Response:
 @web.route('/accounts/', methods=['GET'])
 @login_required
 def accounts() -> Response:
-    """패스워드 리스트를 볼 수 있고, 패스워드 생성도 할 수 있어야함."""
-    return render_template('accounts.html')
+    """계정 리스트를 보는 엔드포인트"""
+    accounts = db_session.query(Account) \
+                         .filter_by(customer_id=session['customer_id'])
+    return render_template('accounts.html', accounts=accounts)
 
 
 @web.route('/passwords/', methods=['POST'])
