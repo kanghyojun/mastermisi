@@ -1,6 +1,7 @@
 from flask import url_for
 
 from mastermisi.entity import Customer
+from mastermisi.web import timestamp
 
 
 def get_url(app, *args, **kwargs):
@@ -18,6 +19,8 @@ def test_login(fx_wsgi_app, fx_customer):
         assert resp.status_code == 302
         with c.session_transaction() as s:
             assert s['_flashes'][0][1] == 'hello님 안녕하세요!'
+            assert s['customer_id'] == fx_customer.id
+            assert s['expired_at'] - timestamp() <= 60 * 5
 
 
 def test_login_fail(fx_wsgi_app, fx_customer):
