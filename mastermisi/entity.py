@@ -44,11 +44,11 @@ class Customer(Base):
     )
 
     @classmethod
-    def create_password(cls, plain: str) -> bytes:
+    def create_passphrase(cls, plain: str) -> bytes:
         return hashlib.sha256(plain.encode('utf-8')).digest()
 
     def encrypt(self, plain_text: str, *, passphrase: str) -> bytes:
-        assert self.match_password(passphrase)
+        assert self.match_passphrase(passphrase)
         f = Fernet(passphrase.encode('utf-8'))
         return f.encrypt(plain_text.encode('utf-8'))
 
@@ -61,8 +61,8 @@ class Customer(Base):
             customer=self
         )
 
-    def match_password(self, passphrase: str) -> bool:
-        pw = self.create_password(passphrase)
+    def match_passphrase(self, plain: str) -> bool:
+        pw = self.create_passphrase(plain)
         return pw == self.passphrase
 
     @property
@@ -96,7 +96,7 @@ class Account(Base):
     )
 
     def decrypt(self, *, passphrase: str) -> str:
-        assert self.customer.match_password(passphrase)
+        assert self.customer.match_passphrase(passphrase)
         f = Fernet(passphrase.encode('utf-8'))
         return f.decrypt(self.passphrase).decode('utf-8')
 

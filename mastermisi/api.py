@@ -25,7 +25,7 @@ def auth() -> Response:
             .one()
     except NoResultFound:
         return jsonify(payload), 404
-    if customer.match_password(payload['passphrase']):
+    if customer.match_passphrase(payload['passphrase']):
         return jsonify(token=customer.token)
     else:
         return jsonify(payload), 403

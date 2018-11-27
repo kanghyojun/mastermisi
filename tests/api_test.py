@@ -9,7 +9,7 @@ from mastermisi.orm import Session
 def test_auth(fx_wsgi_app: Flask, fx_session: Session) -> None:
     customer = Customer(
         name='pjs',
-        passphrase=Customer.create_password('sol')
+        passphrase=Customer.create_passphrase('sol')
     )
     fx_session.add(customer)
     fx_session.flush()
