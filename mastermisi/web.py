@@ -1,21 +1,36 @@
-from flask import Blueprint, Response, redirect, render_template, url_for
+from flask import (Blueprint, Response, flash, redirect, render_template,
+                   request, url_for)
+from wtforms.fields import PasswordField, StringField
+from wtforms.form import Form
+from wtforms.validators import input_required
 
 from .login import login_required
-
 
 __all__ = 'web',
 web: Blueprint = Blueprint(__name__, 'web', template_folder='./templates')
 
 
+class SignForm(Form):
+
+    name = StringField(u'이름', validators=[input_required()])
+
+    passphrase = PasswordField(u'비밀 번호', validators=[input_required()])
+
+
 @web.route('/')
 def hello() -> Response:
     """메인 페이지, 로그인 페이지 겸해서 있는 페이지."""
-    return render_template('index.html')
+    form = SignForm(request.form)
+    return render_template('index.html', form=form)
 
 
 @web.route('/login/', methods=['POST'])
 def login() -> Response:
     """로그인을 시키고 패스워드 페이지를 볼 수 있게 인증함."""
+    form = SignForm(request.form)
+    if not form.validate():
+        flash('에러')
+        return redirect(url_for('.passwords'))
     return redirect(url_for('.passwords'))
 
 
