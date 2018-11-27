@@ -1,6 +1,9 @@
 from flask import Blueprint, Response, jsonify, request
+from sqlalchemy.orm.exc import NoResultFound
 
+from .entity import Customer
 from .login import authorized
+from .orm import session
 
 __all__ = 'api',
 api = Blueprint(__name__, 'api', url_prefix='/api')
@@ -9,7 +12,23 @@ api = Blueprint(__name__, 'api', url_prefix='/api')
 @api.route('/auth/', methods=['POST'])
 def auth() -> Response:
     """브라우저 익스텐션용 로그인 API"""
-    return jsonify(token='helloworld')
+    payload = request.get_json()
+    missing_keys = set()
+    for k in {'name', 'passphrase'}:
+        if not payload or k not in payload:
+            missing_keys.add(k)
+    if missing_keys:
+        return jsonify(missing_keys=list(missing_keys)), 400
+    try:
+        customer = session.query(Customer) \
+            .filter(Customer.name == payload['name']) \
+            .one()
+    except NoResultFound:
+        return jsonify(payload), 404
+    if customer.match_password(payload['passphrase']):
+        return jsonify(token=customer.token)
+    else:
+        return jsonify(payload), 403
 
 
 @api.route('/passwords/', methods=['POST'])

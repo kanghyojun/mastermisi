@@ -43,8 +43,9 @@ class Customer(Base):
         cascade="save-update, merge, delete, delete-orphan"
     )
 
-    def create_password(self, plain: str) -> bytes:
-        return hashlib.sha256(plain).digest()
+    @classmethod
+    def create_password(cls, plain: str) -> bytes:
+        return hashlib.sha256(plain.encode('utf-8')).digest()
 
     def encrypt(self, plain_text: str, *, passphrase: str) -> bytes:
         assert self.match_password(passphrase)
@@ -63,6 +64,10 @@ class Customer(Base):
     def match_password(self, passphrase: str) -> bool:
         pw = self.create_password(passphrase)
         return pw == self.passphrase
+
+    @property
+    def token(self) -> str:
+        return self.id.hex
 
 
 class Account(Base):

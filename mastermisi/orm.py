@@ -29,7 +29,7 @@ def session() -> Session:
     try:
         session = ctx._current_session
     except AttributeError:
-        bind = getattr(ctx, '_test_fx_connection', None)
+        bind = getattr(app_config, '_test_fx_connection', None)
         session = app_config.create_session(bind)
         ctx._current_session = session
     finally:
