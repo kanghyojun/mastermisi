@@ -6,7 +6,6 @@ from wtforms.validators import input_required
 
 from .login import login_required
 
-
 __all__ = 'web',
 web: Blueprint = Blueprint(__name__, 'web', template_folder='./templates')
 
@@ -21,7 +20,7 @@ class SignForm(Form):
 @web.route('/')
 def hello() -> Response:
     """메인 페이지, 로그인 페이지 겸해서 있는 페이지."""
-    form =  SignForm(requset.form)
+    form = SignForm(request.form)
     return render_template('index.html', form=form)
 
 
