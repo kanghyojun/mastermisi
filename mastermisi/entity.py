@@ -5,11 +5,11 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey
-from sqlalchemy.types import DateTime, Unicode
+from sqlalchemy.types import BINARY, DateTime, Unicode
 
 from .orm import Base
 
-__all__ = 'Account', 'Approval', 'Customer',
+__all__ = 'Account', 'Approval', 'Customer'
 
 
 def uuid4():
@@ -19,7 +19,7 @@ def uuid4():
 
 def utcnow():
     """UTC 기준의 현재 시각을 반환합니다."""
-    return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    return datetime.datetime.now(datetime.timezone.utc)
 
 
 class Customer(Base):
@@ -34,7 +34,7 @@ class Customer(Base):
     # 유저 이름 (일반적으로 아이디라고 부르는 값)
     name = Column(Unicode, unique=True, nullable=False)
     # 유저 비밀번호
-    passphrase = Column(Unicode, nullable=False)
+    passphrase = Column(BINARY, nullable=False)
     # 소유한 계정 목록
     accounts = relationship(
         'Account', back_populates='customer',
@@ -57,8 +57,8 @@ class Account(Base):
     host = Column(Unicode, nullable=False)
     # 계정의 이름 (일반적으로 아이디라고 부르는 값)
     name = Column(Unicode, nullable=False)
-    # 계정의 비밀번호
-    passphrase = Column(Unicode, nullable=False)
+    # 계정의 비밀번호. 유저의 비밀번호를 키로 사용하여 암호화하여 생성합니다.
+    passphrase = Column(BINARY, nullable=False)
     # 계정의 주인 유저
     customer = relationship('Customer', back_populates='accounts')
     # 관련된 승인 요청 목록
