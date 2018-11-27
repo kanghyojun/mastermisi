@@ -20,6 +20,12 @@ def login() -> Response:
     return redirect(url_for('.passwords'))
 
 
+@web.route('/passcode/', methods=['GET'])
+@login_required
+def get_passcode() -> Response:
+    return '1234'
+
+
 @web.route('/passwords/', methods=['GET'])
 @login_required
 def passwords() -> Response:
