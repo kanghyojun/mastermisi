@@ -1,13 +1,16 @@
+import datetime
+import time
+
 from flask import (Blueprint, Response, flash, redirect, render_template,
-                   request, url_for)
+                   request, session, url_for)
 from sqlalchemy.orm.exc import NoResultFound
 from wtforms.fields import PasswordField, StringField
 from wtforms.form import Form
 from wtforms.validators import input_required
 
-from .entity import Customer
+from .entity import Account, Customer
 from .login import login_required
-from .orm import session
+from .orm import session as db_session
 
 __all__ = 'web',
 web: Blueprint = Blueprint(__name__, 'web', template_folder='./templates')
@@ -22,7 +25,24 @@ class SignForm(Form):
 
     name = StringField(u'이름', validators=[input_required()])
 
-    passphrase = PasswordField(u'암호', validators=[input_required()])
+    passphrase = PasswordField(u'마스터 암호', validators=[input_required()])
+
+
+class AccountForm(Form):
+    """소유 계정을 입력하는 폼."""
+    host = StringField('호스트', validators=[input_required()])
+
+    name = StringField('이름', validators=[input_required()])
+
+    passphrase = PasswordField('암호', validators=[input_required()])
+
+    master_passphrase = PasswordField('마스터 암호',
+                                      validators=[input_required()])
+
+
+def timestamp(offset=0):
+    time_ = datetime.datetime.utcnow() + datetime.timedelta(seconds=offset)
+    return int(time.mktime(time_.timetuple()))
 
 
 @web.route('/', methods=['GET'])
@@ -47,7 +67,7 @@ def login() -> Response:
         return redirect(url_for('.login_form'))
     passphrase = Customer.create_passphrase(form.passphrase.data)
     try:
-        customer = session.query(
+        customer = db_session.query(
             Customer
         ).filter_by(
             name=form.name.data,
@@ -57,6 +77,8 @@ def login() -> Response:
         flash('이름 혹은 암호가 잘못되었습니다.')
         return redirect(url_for('.login_form'))
     else:
+        session['customer_id'] = customer.id
+        session['expired_at'] = timestamp(60 * 5)
         flash(f'{customer.name}님 안녕하세요!')
         return redirect(url_for('.accounts'))
 
@@ -75,12 +97,12 @@ def signup() -> Response:
     if not form.validate():
         flash('모든 값을 입력해주세요.')
         return redirect(url_for('.signup_form'))
-    if session.query(Customer).filter_by(name=form.name.data).first():
+    if db_session.query(Customer).filter_by(name=form.name.data).first():
         flash('이미 존재하는 이름입니다.')
         return redirect(url_for('.signup_form'))
     passphrase = Customer.create_passphrase(form.passphrase.data)
-    session.add(Customer(name=form.name.data, passphrase=passphrase))
-    session.commit()
+    db_session.add(Customer(name=form.name.data, passphrase=passphrase))
+    db_session.commit()
     flash('가입이 완료되었습니다.')
     return redirect(url_for('.index'))
 
@@ -94,15 +116,39 @@ def get_passcode() -> Response:
 @web.route('/accounts/', methods=['GET'])
 @login_required
 def accounts() -> Response:
-    """패스워드 리스트를 볼 수 있고, 패스워드 생성도 할 수 있어야함."""
-    return render_template('accounts.html')
+    """계정 리스트를 보는 엔드포인트"""
+    accounts = db_session.query(Account) \
+                         .filter_by(customer_id=session['customer_id'])
+    form = AccountForm()
+    return render_template('accounts.html', accounts=accounts, form=form)
 
 
-@web.route('/passwords/', methods=['POST'])
+@web.route('/accounts/', methods=['POST'])
 @login_required
-def create_password() -> Response:
-    """패스워드를 생성하고, ``passwords``로 리디렉션함."""
-    return redirect(url_for('.passwords'))
+def account_new() -> Response:
+    """계정을 등록하는 엔드포인트"""
+    form = AccountForm(request.form)
+    if not form.validate():
+        flash('모든 값을 입력해주세요.')
+        return redirect(url_for('.accounts'))
+    customer = db_session.query(Customer) \
+                         .filter_by(id=session['customer_id']) \
+                         .one()
+    try:
+        account = customer.create_account(
+            form.host.data,
+            form.name.data,
+            form.passphrase.data,
+            passphrase=form.master_passphrase.data
+        )
+    except AssertionError:
+        flash('마스터 암호가 다릅니다.')
+        return redirect(url_for('.accounts'))
+    else:
+        db_session.add(account)
+        db_session.commit()
+        flash('등록이 완료되었습니다.')
+        return redirect(url_for('.accounts'))
 
 
 @web.route('/passwords/<int:id>/', methods=['POST'])

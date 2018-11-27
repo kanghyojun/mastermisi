@@ -2,6 +2,31 @@
 
 {% block body %}
 
-<p>계정 목록이 나와야 함.</p>
+<h1>계정 목록</h1>
+<table border="1">
+<thead>
+    <tr>
+        <th>호스트</th>
+        <th>계정</th>
+        <th>등록일시</th>
+    </tr>
+</thead>
+<tbody>
+    {% for account in accounts %}
+        <tr>
+            <td>{{ account.host }}</td>
+            <td>{{ account.name }}</td>
+            <td>{{ account.created_at }}</td>
+        </tr>
+    {% endfor %}
+</tbody>
+</table>
+<form method="POST" action="{{ url_for('.account_new') }}">
+    {% for field in form %}
+        {{ field.label }}
+        {{ field }}
+    {% endfor %}
+    <input type="submit" value="Register" />
+</form>
 
 {% endblock %}
