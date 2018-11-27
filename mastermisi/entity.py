@@ -1,6 +1,9 @@
 import datetime
+import hashlib
 import uuid
+from typing import Optional
 
+from cryptography.fernet import Fernet
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey
@@ -40,6 +43,27 @@ class Customer(Base):
         cascade="save-update, merge, delete, delete-orphan"
     )
 
+    def create_password(self, plain: str) -> bytes:
+        return hashlib.sha256(plain).digest()
+
+    def encrypt(self, plain_text: str, *, passphrase: str) -> bytes:
+        assert self.match_password(passphrase)
+        f = Fernet(passphrase.encode('utf-8'))
+        return f.encrypt(plain_text.encode('utf-8'))
+
+    def create_account(self, host: str, name: str, plain_pass: str,
+                       *, passphrase: str) -> 'Account':
+        return Account(
+            host=host,
+            name=name,
+            passphrase=self.encrypt(plain_pass, passphrase=passphrase),
+            customer=self
+        )
+
+    def match_password(self, passphrase: str) -> bool:
+        pw = self.create_password(passphrase)
+        return pw == self.passphrase
+
 
 class Account(Base):
     """계정 정보. 정보 접근 승인을 시도할 때마다 승인 정보가 생성됩니다."""
@@ -66,6 +90,11 @@ class Account(Base):
         cascade="save-update, merge, delete, delete-orphan"
     )
 
+    def decrypt(self, *, passphrase: str) -> str:
+        self.customer.match_password(passphrase)
+        f = Fernet(passphrase.encode('utf-8'))
+        return f.decrypt(self.passphrase).decode('utf-8')
+
 
 class Approval(Base):
     """승인 정보. 퀴즈 정답을 맞혀야 승인 대상 계정에 접근할 수 있습니다."""
@@ -86,3 +115,14 @@ class Approval(Base):
     quiz_answer = Column(Unicode, nullable=False)
     # 승인 대상 계정
     account = relationship('Account', back_populates='approvals')
+
+    def approve(self, *, passphrase: str,
+                now: Optional[datetime.datetime] = None) -> str:
+        if now is None:
+            now = utcnow()
+        assert approved_at is None
+        self.approved_at = now
+        self.expired_at = now + datetime.timedelta(seconds=60 * 10)
+        self.account.customer.decrypt(passphrase)
+        f = Fernet(passphrase.encode('utf-8'))
+        return f.decrypt(self.account.passphrase).decode('utf-8')
