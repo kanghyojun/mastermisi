@@ -5,3 +5,4 @@ ormeasy
 psycopg2
 settei
 SQLAlchemy
+WTForms
