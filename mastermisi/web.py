@@ -7,7 +7,7 @@ from wtforms.validators import input_required
 
 from .entity import Customer
 from .login import login_required
-from .orm import session
+from .orm import session as db_session
 
 __all__ = 'web',
 web: Blueprint = Blueprint(__name__, 'web', template_folder='./templates')
@@ -47,7 +47,7 @@ def login() -> Response:
         return redirect(url_for('.login_form'))
     passphrase = Customer.create_passphrase(form.passphrase.data)
     try:
-        customer = session.query(
+        customer = db_session.query(
             Customer
         ).filter_by(
             name=form.name.data,
