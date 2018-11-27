@@ -1,0 +1,4 @@
+[flake8]
+exclude = .venv
+import-order-style = spoqa
+application-import-names = mastermisi

@@ -35,7 +35,6 @@ def is_approved() -> Response:
     return jsonify()
 
 
-
 @api.route('/pending-approvals/<int:id>/', methods=['POST'])
 @authorized
 def approve(id) -> Response:
