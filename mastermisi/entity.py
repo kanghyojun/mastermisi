@@ -91,7 +91,7 @@ class Account(Base):
     )
 
     def decrypt(self, *, passphrase: str) -> str:
-        self.customer.match_password(passphrase)
+        assert self.customer.match_password(passphrase)
         f = Fernet(passphrase.encode('utf-8'))
         return f.decrypt(self.passphrase).decode('utf-8')
 
@@ -120,9 +120,7 @@ class Approval(Base):
                 now: Optional[datetime.datetime] = None) -> str:
         if now is None:
             now = utcnow()
-        assert approved_at is None
+        assert self.approved_at is None
+        assert self.expired_at < now
         self.approved_at = now
-        self.expired_at = now + datetime.timedelta(seconds=60 * 10)
-        self.account.customer.decrypt(passphrase)
-        f = Fernet(passphrase.encode('utf-8'))
-        return f.decrypt(self.account.passphrase).decode('utf-8')
+        return self.account.decrypt(passphrase)
