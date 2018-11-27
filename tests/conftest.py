@@ -23,6 +23,9 @@ def fx_app(request) -> App:
     except ValueError:
         database_url = os.environ.get('TEST_DATABASE_URL')
     return App({
+        'web': {
+            'secret_key': '과민성 쇼크, 피부 장애, 식욕부진, 가슴쓰림, 위통,',
+        },
         'database': {
             'url': database_url,
         },

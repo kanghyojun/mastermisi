@@ -12,8 +12,12 @@ __all__ = 'App',
 
 class App(WebConfiguration):
     """서버 애플리케이션입니다."""
+    secret_key = config_property(
+        'web.secret_key', str, '쿠키 암호화용 비밀키'
+    )
+
     database_url = config_property(
-        'database.url', str, "데이터베이스 연결용 문자열"
+        'database.url', str, '데이터베이스 연결용 문자열'
     )
 
     @cached_property
