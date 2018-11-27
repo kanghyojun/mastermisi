@@ -11,7 +11,7 @@ from mastermisi.orm import get_alembic_config
 
 class Migrate(CommandLine):
 
-    def main(self, argv: typing.Optional[typing.Sequence[str]]=None) -> None:
+    def main(self, argv: typing.Optional[typing.Sequence[str]] = None) -> None:
         options = self.parser.parse_args(argv)
         if not options.config:
             raise ValueError('--config MUST be required.')

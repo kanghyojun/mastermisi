@@ -1,12 +1,12 @@
 """Init
 
 Revision ID: e1825686f2ef
-Revises: 
+Revises:
 Create Date: 2018-11-28 01:36:26.089499
 
 """
 from alembic import op
-import sqlalchemy as sa
+import sqlalchemy as sa  # noqa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.

@@ -1,5 +1,4 @@
-from flask import (Blueprint, Response, render_template, redirect, url_for,
-                   jsonify)
+from flask import Blueprint, Response, redirect, render_template, url_for
 
 from .login import login_required
 
@@ -36,7 +35,7 @@ def passwords() -> Response:
 @web.route('/passwords/', methods=['POST'])
 @login_required
 def create_password() -> Response:
-    """패스워드를 생성하고, ``passwords``\ 로 리디렉션함."""
+    """패스워드를 생성하고, ``passwords``로 리디렉션함."""
     return redirect(url_for('.passwords'))
 
 

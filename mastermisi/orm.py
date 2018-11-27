@@ -1,11 +1,11 @@
 from typing import Optional, Union
 
-from flask import current_app, has_request_context
 from alembic.config import Config
+from flask import current_app, has_request_context, request
+from ormeasy.sqlalchemy import repr_entity
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy.orm import sessionmaker
-from ormeasy.sqlalchemy import repr_entity
 from werkzeug.local import LocalProxy
 
 __all__ = 'Base', 'Session', 'get_alembic_config'
@@ -29,6 +29,7 @@ def session() -> Session:
     try:
         session = ctx._current_session
     except AttributeError:
+        bind = getattr(ctx, '_test_fx_connection', None)
         session = app_config.create_session(bind)
         ctx._current_session = session
     finally:

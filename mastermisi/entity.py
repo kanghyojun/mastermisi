@@ -2,7 +2,6 @@ import datetime
 import uuid
 
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import BINARY, DateTime, Unicode

@@ -1,4 +1,5 @@
 alembic
+cryptography
 Flask
 ormeasy
 psycopg2
