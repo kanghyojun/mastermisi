@@ -1,11 +1,13 @@
 import os
+from typing import Sequence
+import uuid
 
 from flask import Flask
 from ormeasy.sqlalchemy import test_connection
 from pytest import fixture
 
 from mastermisi.app import App
-from mastermisi.entity import Customer
+from mastermisi.entity import Account, Customer
 from mastermisi.orm import Base, Session
 from mastermisi.wsgi import create_wsgi_app
 
@@ -73,3 +75,27 @@ def fx_account(fx_customer: Customer, fx_session: Session) -> Customer:
     fx_session.add(account)
     fx_session.flush()
     return account
+
+
+@fixture
+def fx_accounts(fx_customer: Customer,
+                fx_session: Session) -> Sequence[Account]:
+    accounts = [
+        fx_customer.create_account(
+            'naver.com',
+            'honggildong',
+            'abcd',
+            passphrase='world'
+        ),
+        fx_customer.create_account(
+            'google.com',
+            'tamlagook',
+            'efgh',
+            passphrase='world'
+        ),
+    ]
+    accounts[0].id = uuid.UUID('b1966a25-68ae-4554-8ddb-cccf795b73a0')
+    accounts[1].id = uuid.UUID('3e9bce54-003e-4419-8f58-f8b19152c768')
+    fx_session.add_all(accounts)
+    fx_session.flush()
+    return accounts
