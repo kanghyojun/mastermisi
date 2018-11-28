@@ -1,0 +1,25 @@
+{% extends "layout_with_navi.html" %}
+
+{% block body %}
+
+<h1>승인 요청</h1>
+<p>로그인하시려면 브라우저에 표시된 패스코드를 입력하세요.</p>
+<dl>
+    <dt>호스트</dt>
+    <dd>{{ approval.account.host }}</dd>
+    <dt>계정</dt>
+    <dd>{{ approval.account.name }}</dd>
+    <dt>요청일시</dt>
+    <dd>{{ approval.created_at }}</dd>
+    <dt>만료일시</dt>
+    <dd>{{ approval.expired_at }}</dd>
+</dl>
+<form method="POST" action="{{ url_for('.approve_approval', id=approval.id) }}">
+    {% for field in form %}
+        {{ field.label }}
+        {{ field }}
+    {% endfor %}
+    <input type="submit" value="승인" />
+</form>
+
+{% endblock %}

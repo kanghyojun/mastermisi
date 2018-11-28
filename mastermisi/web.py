@@ -1,11 +1,15 @@
+import uuid
+
 from flask import (Blueprint, Response, flash, redirect, render_template,
                    request, session, url_for)
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql.functions import now
 from wtforms.fields import PasswordField, StringField
 from wtforms.form import Form
 from wtforms.validators import input_required
 
-from .entity import Account, Customer
+from .entity import Account, Approval, Customer
 from .login import login_required, timestamp
 from .orm import session as db_session
 
@@ -35,6 +39,11 @@ class AccountForm(Form):
 
     master_passphrase = PasswordField('마스터 암호',
                                       validators=[input_required()])
+
+
+class ApprovalForm(Form):
+    """로그인 승인 폼."""
+    quiz_answer = StringField('패스코드', validators=[input_required()])
 
 
 @web.route('/', methods=['GET'])
@@ -105,12 +114,6 @@ def signup() -> Response:
     return redirect(url_for('.index'))
 
 
-@web.route('/passcode/', methods=['GET'])
-@login_required
-def get_passcode() -> Response:
-    return '1234'
-
-
 @web.route('/accounts/', methods=['GET'])
 @login_required
 def accounts() -> Response:
@@ -149,28 +152,75 @@ def account_new() -> Response:
         return redirect(url_for('.accounts'))
 
 
-@web.route('/passwords/<int:id>/', methods=['POST'])
-@login_required
-def delete_password() -> Response:
-    """패스워드를 지움."""
-    return redirect(url_for('.passwords'))
-
-
 @web.route('/pending-approvals/', methods=['GET'])
 @login_required
 def pending_approvals() -> Response:
     """어프루브를 기다리고 있는 로그인 리스트들."""
-    return 'pending-approvals'
+    approvals = db_session.query(
+        Approval
+    ).options(
+        joinedload(Approval.account)
+    ).filter(
+        Approval.account.has(
+            Account.customer_id == session['customer_id']
+        ),
+        ~Approval.approved,
+        Approval.expired_at >= now(),
+    )
+    return render_template('pending_approvals.html', approvals=approvals)
 
 
-@web.route('/pending-approvals/<int:id>/', methods=['GET'])
+@web.route('/pending-approvals/<uuid:id>/', methods=['GET'])
 @login_required
-def do_approval() -> Response:
-    """로그인 리스트를 어프루브하기 위해 퀴즈 같은 것을 맞춰야할 수 있다."""
-    return 'do_approval'
+def approve_approval_form(id: uuid.UUID) -> Response:
+    """로그인 리스트를 어프루브하기 위해 패스코드를 맞춰야 한다."""
+    try:
+        approval = db_session.query(
+            Approval
+        ).options(
+            joinedload(Approval.account)
+        ).filter(
+            Approval.account.has(
+                Account.customer_id == session['customer_id']
+            ),
+            ~Approval.approved,
+            Approval.expired_at >= now(),
+            Approval.id == id,
+        ).one()
+    except NoResultFound:
+        flash('만료되었거나 존재하지 않는 승인 요청입니다.')
+        return redirect(url_for('.pending_approvals'))
+    else:
+        return render_template(
+            'approval_form.html', approval=approval, form=ApprovalForm()
+        )
 
 
-@web.route('/pending-approvals/<int:id>/', methods=['DELETE'])
-def deny_approvals() -> Response:
-    """로그인을 거절함."""
-    return redirect(url_for('.do_approval'))
+@web.route('/pending-approvals/<uuid:id>/', methods=['POST'])
+def approve_approval(id: uuid.UUID) -> Response:
+    """로그인을 승인함."""
+    try:
+        approval = db_session.query(
+            Approval
+        ).options(
+            joinedload(Approval.account)
+        ).filter(
+            Approval.account.has(
+                Account.customer_id == session['customer_id']
+            ),
+            ~Approval.approved,
+            Approval.expired_at >= now(),
+            Approval.id == id,
+        ).one()
+    except NoResultFound:
+        flash('만료되었거나 존재하지 않는 승인 요청입니다.')
+        return redirect(url_for('.pending_approvals'))
+    else:
+        form = ApprovalForm(request.form)
+        if approval.quiz_answer != form.quiz_answer.data:
+            flash('잘못된 패스코드입니다.')
+            return redirect(url_for('.approve_approval_form', id=approval.id))
+        approval.approve()
+        db_session.commit()
+        flash('승인되었습니다. 브라우저를 확인하세요.')
+        return redirect(url_for('.pending_approvals'))

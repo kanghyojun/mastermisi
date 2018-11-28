@@ -1,0 +1,29 @@
+{% extends "layout_with_navi.html" %}
+
+{% block body %}
+
+<h1>승인 대기 목록</h1>
+<table border="1">
+<thead>
+    <tr>
+        <th>호스트</th>
+        <th>계정</th>
+        <th>요청일시</th>
+        <th>만료일시</th>
+        <th>승인</th>
+    </tr>
+</thead>
+<tbody>
+    {% for approval in approvals %}
+        <tr>
+            <td>{{ approval.account.host }}</td>
+            <td>{{ approval.account.name }}</td>
+            <td>{{ approval.created_at }}</td>
+            <td>{{ approval.expired_at }}</td>
+            <td><a href="{{ url_for('.approve_approval_form', id=approval.id) }}">승인하기</a></td>
+        </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+{% endblock %}
