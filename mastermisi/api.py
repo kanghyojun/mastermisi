@@ -1,7 +1,7 @@
 import urllib.parse
 import uuid
 
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, Response, g, jsonify, request
 from sqlalchemy.orm.exc import NoResultFound
 
 from .entity import Account, Approval, Customer
@@ -44,6 +44,7 @@ def get_passwords() -> Response:
     o = urllib.parse.urlparse(payload['url'])
     account = session.query(Account) \
         .filter(Account.host == o.netloc) \
+        .filter(Account.customer.has(Customer.id == g.customer.id)) \
         .order_by(Account.created_at.desc()) \
         .first()
     if not account:
@@ -54,32 +55,39 @@ def get_passwords() -> Response:
     return jsonify({'id': account.id.hex})
 
 
-@api.route('/passwords/<uuid:id>/approvals/', methods=['POST'])
+@api.route('/passwords/<uuidhex:id>/approvals/', methods=['POST'])
 @authorized
 def create_pending_approvals(id: uuid.UUID) -> Response:
     """로그인을 위한 어프루브를 생성한다."""
     try:
         account = session.query(Account) \
-            .filter(Account.id == id) \
+            .filter(Account.id == id,
+                    Account.customer.has(Customer.id == g.customer.id)) \
             .one()
     except NoResultFound:
-        return jsonify('there are no account')
-    approval = account.create_approval()
-    session.add(approval)
-    session.commit()
-    return jsonify(id=approval.id.hex)
+        return jsonify('there are no account'), 404
+    approval = session.query(Approval) \
+        .filter(Approval.account.has(Account.id == account.id),
+                Approval.activated) \
+        .order_by(Approval.created_at.desc()) \
+        .first()
+    if not approval:
+        approval = account.create_approval()
+        session.add(approval)
+        session.commit()
+    return jsonify(id=approval.id.hex, quiz_answer=approval.quiz_answer)
 
 
-@api.route('/pending-approvals/<int:id>/approved/', methods=['GET'])
+@api.route('/pending-approvals/', methods=['GET'])
 @authorized
 def is_approved() -> Response:
     """어프루브가 필요한 로그인 정보를 폴링할때 사용할 API"""
     return jsonify()
 
 
-@api.route('/pending-approvals/<uuid:id>/', methods=['POST'])
+@api.route('/pending-approvals/<uuidhex:id>/', methods=['POST'])
 @authorized
-def do_approve(id: uuid.UUID) -> Response:
+def approve(id: uuid.UUID) -> Response:
     """로그인 어프루브할 것인지 말것인지 정하는 엔드포인트. 퀴즈가 맞지않다면
     로그인 실패처리하게 하도록해야함.
 

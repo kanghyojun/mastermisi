@@ -7,8 +7,10 @@ import uuid
 
 from cryptography.fernet import Fernet
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import CheckConstraint, Column, ForeignKey
+from sqlalchemy.sql.functions import now
 from sqlalchemy.types import DateTime, LargeBinary, Unicode
 
 from .orm import Base
@@ -158,3 +160,11 @@ class Approval(Base):
         assert self.expired_at < now
         self.approved_at = now
         return self.account.decrypt(passphrase)
+
+    @hybrid_property
+    def activated(self) -> bool:
+        return self.expired_at >= utcnow()
+
+    @activated.expression
+    def activated(cls):
+        return cls.expired_at >= now()
