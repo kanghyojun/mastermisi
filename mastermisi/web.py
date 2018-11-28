@@ -1,5 +1,3 @@
-import datetime
-import time
 import uuid
 
 from flask import (Blueprint, Response, flash, redirect, render_template,
@@ -12,7 +10,7 @@ from wtforms.form import Form
 from wtforms.validators import input_required
 
 from .entity import Account, Approval, Customer
-from .login import login_required
+from .login import login_required, timestamp
 from .orm import session as db_session
 
 __all__ = 'web',
@@ -46,11 +44,6 @@ class AccountForm(Form):
 class ApprovalForm(Form):
     """로그인 승인 폼."""
     quiz_answer = StringField('패스코드', validators=[input_required()])
-
-
-def timestamp(offset=0):
-    time_ = datetime.datetime.utcnow() + datetime.timedelta(seconds=offset)
-    return int(time.mktime(time_.timetuple()))
 
 
 @web.route('/', methods=['GET'])
@@ -89,6 +82,12 @@ def login() -> Response:
         session['expired_at'] = timestamp(60 * 5)
         flash(f'{customer.name}님 안녕하세요!')
         return redirect(url_for('.accounts'))
+
+
+@web.route('/logout/', methods=['GET'])
+def logout() -> Response:
+    session.clear()
+    return redirect(url_for('.login_form'))
 
 
 @web.route('/signup/', methods=['GET'])
