@@ -2,24 +2,38 @@
 
 {% block body %}
 
-<h1>승인 요청</h1>
-<p>로그인하시려면 브라우저에 표시된 패스코드를 입력하세요.</p>
-<dl>
-    <dt>호스트</dt>
-    <dd>{{ approval.account.host }}</dd>
-    <dt>계정</dt>
-    <dd>{{ approval.account.name }}</dd>
-    <dt>요청일시</dt>
-    <dd>{{ approval.created_at }}</dd>
-    <dt>만료일시</dt>
-    <dd>{{ approval.expired_at }}</dd>
-</dl>
-<form method="POST" action="{{ url_for('.approve_approval', id=approval.id) }}">
-    {% for field in form %}
-        {{ field.label }}
-        {{ field }}
-    {% endfor %}
-    <input type="submit" value="승인" />
-</form>
+<div class="container">
+    <div class="row">
+        <h2>승인 요청</h2>
+    </div>
+    <div class="row">
+        <p>로그인하시려면 브라우저에 표시된 패스코드를 입력하세요.</p>
+    </div>
+    <div class="row">
+        <dl class="row">
+            <dt class="col-sm-3">호스트</dt>
+            <dd class="col-sm-9">{{ approval.account.host }}</dd>
+            <dt class="col-sm-3">계정</dt>
+            <dd class="col-sm-9">{{ approval.account.name }}</dd>
+            <dt class="col-sm-3">요청일시</dt>
+            <dd class="col-sm-9">{{ approval.created_at }}</dd>
+            <dt class="col-sm-3">만료일시</dt>
+            <dd class="col-sm-9">{{ approval.expired_at }}</dd>
+        </dl>
+    </div>
+    <div class="row">
+        <form method="POST" action="{{ url_for('.approve_approval', id=approval.id) }}">
+            <div class="form-row">
+                {% for field in form %}
+                    <div class="form-group col-md">
+                        <label>{{ field.label }}</label>
+                        {{ field(class_="form-control") }}
+                    </div>
+                {% endfor %}
+            </div>
+            <input type="submit" class="btn btn-primary" value="승인" />
+        </form>
+    </div>
+</div>
 
 {% endblock %}

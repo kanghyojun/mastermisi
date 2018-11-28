@@ -2,31 +2,42 @@
 
 {% block body %}
 
-<h1>계정 목록</h1>
-<table border="1">
-<thead>
-    <tr>
-        <th>호스트</th>
-        <th>계정</th>
-        <th>등록일시</th>
-    </tr>
-</thead>
-<tbody>
-    {% for account in accounts %}
-        <tr>
-            <td>{{ account.host }}</td>
-            <td>{{ account.name }}</td>
-            <td>{{ account.created_at }}</td>
-        </tr>
-    {% endfor %}
-</tbody>
-</table>
-<form method="POST" action="{{ url_for('.account_new') }}">
-    {% for field in form %}
-        {{ field.label }}
-        {{ field }}
-    {% endfor %}
-    <input type="submit" value="Register" />
-</form>
+<div class="container">
+    <div class="row">
+        <h2>계정 목록</h2>
+        <table class="table">
+        <thead>
+            <tr>
+                <th>호스트</th>
+                <th>계정</th>
+                <th>등록일시</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+                <tr>
+                    <td>{{ account.host }}</td>
+                    <td>{{ account.name }}</td>
+                    <td>{{ account.created_at }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+    <div class="row">
+        <h2>계정 등록</h2>
+        <form method="POST" action="{{ url_for('.account_new') }}">
+            <div class="form-row">
+                {% for field in form %}
+                    <div class="form-group col-md">
+                        <label>{{ field.label }}</label>
+                        {{ field(class_="form-control") }}
+                    </div>
+                {% endfor %}
+            </div>
+            <input type="submit" class="btn btn-primary" value="등록" />
+        </form>
+    </div>
+</div>
 
 {% endblock %}
