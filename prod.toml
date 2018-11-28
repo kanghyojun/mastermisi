@@ -1,6 +1,6 @@
 [web]
 secret_key = "HwTxDE/NgBwfTBCHwWiS7f/JMRatrJ451pYNfCIngPw="
-debug=false
+debug = false
 
 [database]
 url = "postgresql://postgres:postgres@pgsql:5432/mm"
