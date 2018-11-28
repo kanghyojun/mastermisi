@@ -168,3 +168,11 @@ class Approval(Base):
     @activated.expression
     def activated(cls):
         return cls.expired_at >= now()
+
+    @hybrid_property
+    def approved(self) -> bool:
+        return self.approved_at is not None
+
+    @approved.expression
+    def approved(cls):
+        return cls.approved_at.isnot(None)

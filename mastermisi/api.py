@@ -78,11 +78,44 @@ def create_pending_approvals(id: uuid.UUID) -> Response:
     return jsonify(id=approval.id.hex, quiz_answer=approval.quiz_answer)
 
 
-@api.route('/pending-approvals/', methods=['GET'])
+@api.route('/pending-approvals/<uuidhex:id>/approved/', methods=['GET'])
 @authorized
-def is_approved() -> Response:
+def is_approved(id: uuid.UUID) -> Response:
     """어프루브가 필요한 로그인 정보를 폴링할때 사용할 API"""
-    return jsonify()
+    try:
+        session.query(Approval) \
+            .filter(Approval.id == id,
+                    Approval.activated,
+                    Approval.approved) \
+            .one()
+    except NoResultFound:
+        res = False
+    else:
+        res = True
+    return jsonify(result=res)
+
+
+@api.route('/approvals/<uuidhex:id>/decrypt/', methods=['POST'])
+def approvals(id: uuid.UUID) -> Response:
+    try:
+        approval = session.query(Approval) \
+            .options() \
+            .filter(Approval.id == id, Approval.activated, Approval.approved) \
+            .one()
+    except NoResultFound:
+        return jsonify(success=False), 404
+    payload = request.get_json()
+    if 'passphrase' not in payload:
+        return jsonify(success=False), 400
+    try:
+        return jsonify(
+            success=True,
+            name=approval.account.name,
+            passphrase=approval.account.decrypt(payload['passphrase'])
+        )
+    except Exception as e:
+        print(e)
+        return jsonify(success=False), 500
 
 
 @api.route('/pending-approvals/<uuidhex:id>/', methods=['POST'])
