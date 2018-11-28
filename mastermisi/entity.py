@@ -152,14 +152,12 @@ class Approval(Base):
         CheckConstraint('created_at < expired_at', name='ck_expired_at'),
     )
 
-    def approve(self, *, passphrase: str,
-                now: Optional[datetime.datetime] = None) -> str:
+    def approve(self, *, now: Optional[datetime.datetime] = None) -> str:
         if now is None:
             now = utcnow()
         assert self.approved_at is None
-        assert self.expired_at < now
+        assert self.expired_at >= now
         self.approved_at = now
-        return self.account.decrypt(passphrase)
 
     @hybrid_property
     def activated(self) -> bool:
