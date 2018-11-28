@@ -20,6 +20,8 @@ class App(WebConfiguration):
         'database.url', str, '데이터베이스 연결용 문자열'
     )
 
+    debug = config_property('web.debug', bool, default=True)
+
     @cached_property
     def database_engine(self) -> Engine:
         return create_engine(self.database_url)

@@ -1,0 +1,6 @@
+[web]
+secret_key="hi"
+debug=True
+
+[database]
+url = "postgresql://postgres:postgres@localhost:5432/mastermisi"

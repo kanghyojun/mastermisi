@@ -1,0 +1,12 @@
+version: '3'
+services:
+  pgsql:
+    image: postgres:10.3
+    ports:
+      - "5432:5432"
+  web:
+    image: mastermisi:latest
+    ports:
+      - "5000:5000"
+    depends_on:
+      - pgsql
