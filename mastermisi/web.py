@@ -107,12 +107,6 @@ def signup() -> Response:
     return redirect(url_for('.index'))
 
 
-@web.route('/passcode/', methods=['GET'])
-@login_required
-def get_passcode() -> Response:
-    return '1234'
-
-
 @web.route('/accounts/', methods=['GET'])
 @login_required
 def accounts() -> Response:
@@ -149,13 +143,6 @@ def account_new() -> Response:
         db_session.commit()
         flash('등록이 완료되었습니다.')
         return redirect(url_for('.accounts'))
-
-
-@web.route('/passwords/<int:id>/', methods=['POST'])
-@login_required
-def delete_password() -> Response:
-    """패스워드를 지움."""
-    return redirect(url_for('.passwords'))
 
 
 @web.route('/pending-approvals/', methods=['GET'])
