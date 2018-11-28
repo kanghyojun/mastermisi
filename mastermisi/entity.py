@@ -1,6 +1,7 @@
 import base64
 import datetime
 import hashlib
+import random
 from typing import Optional
 import uuid
 
@@ -112,6 +113,17 @@ class Account(Base):
         key = base64.urlsafe_b64encode(span_bytes(passphrase.encode('utf-8')))
         f = Fernet(key)
         return f.decrypt(self.passphrase).decode('utf-8')
+
+    def create_approval(self, *,
+                        now: Optional[datetime.datetime] = None) -> 'Approval':
+        t = 'abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXY0123456789'
+        if not now:
+            now = utcnow()
+        return Approval(
+            account=self,
+            quiz_answer=''.join(random.sample(t, 6)),
+            expired_at=now + datetime.timedelta(seconds=60 * 5)
+        )
 
 
 class Approval(Base):
