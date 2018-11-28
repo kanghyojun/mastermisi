@@ -1,5 +1,5 @@
 [web]
-secret_key="HwTxDE/NgBwfTBCHwWiS7f/JMRatrJ451pYNfCIngPw="
+secret_key = "HwTxDE/NgBwfTBCHwWiS7f/JMRatrJ451pYNfCIngPw="
 debug=false
 
 [database]
