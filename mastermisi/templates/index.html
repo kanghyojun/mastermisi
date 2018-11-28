@@ -2,18 +2,20 @@
 
 {% block body %}
 
-<div class="jumbotron">
-  <h1 class="display-4">일루미네이터</h1>
-  <p class="lead">
-    모바일 앱을 이용해서 비밀번호를 쉽게 관리하고, 빨리 입력하세요.
-  </p>
-  <p class="lead">
-    <a class="btn btn-primary btn-lg" href="{{ url_for('.signup_form') }}">가입하기</a>
-  </p>
-</div>
+<div class="container">
+    <div class="jumbotron">
+        <h1 class="display-4">일루미네이터</h1>
+        <p class="lead">
+        모바일 앱을 이용해서 비밀번호를 쉽게 관리하고, 빨리 입력하세요.
+        </p>
+        <p class="lead">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('.signup_form') }}">가입하기</a>
+        </p>
+    </div>
 
-<div>
-    이미 계정이 있으시다면, <a class="btn btn-outline-secondary" href="{{ url_for('.login_form') }}">로그인</a>하기.
+    <div>
+        이미 계정이 있으시다면, <a class="btn btn-outline-secondary" href="{{ url_for('.login_form') }}">로그인</a>하기.
+    </div>
 </div>
 
 {% endblock %}
