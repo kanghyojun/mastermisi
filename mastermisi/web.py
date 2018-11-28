@@ -1,6 +1,3 @@
-import datetime
-import time
-
 from flask import (Blueprint, Response, flash, redirect, render_template,
                    request, session, url_for)
 from sqlalchemy.orm.exc import NoResultFound
@@ -9,7 +6,7 @@ from wtforms.form import Form
 from wtforms.validators import input_required
 
 from .entity import Account, Customer
-from .login import login_required
+from .login import login_required, timestamp
 from .orm import session as db_session
 
 __all__ = 'web',
@@ -38,11 +35,6 @@ class AccountForm(Form):
 
     master_passphrase = PasswordField('마스터 암호',
                                       validators=[input_required()])
-
-
-def timestamp(offset=0):
-    time_ = datetime.datetime.utcnow() + datetime.timedelta(seconds=offset)
-    return int(time.mktime(time_.timetuple()))
 
 
 @web.route('/', methods=['GET'])
@@ -81,6 +73,12 @@ def login() -> Response:
         session['expired_at'] = timestamp(60 * 5)
         flash(f'{customer.name}님 안녕하세요!')
         return redirect(url_for('.accounts'))
+
+
+@web.route('/logout/', methods=['GET'])
+def logout() -> Response:
+    session.clear()
+    return redirect(url_for('.login_form'))
 
 
 @web.route('/signup/', methods=['GET'])
