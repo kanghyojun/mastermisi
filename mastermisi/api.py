@@ -68,7 +68,8 @@ def create_pending_approvals(id: uuid.UUID) -> Response:
         return jsonify('there are no account'), 404
     approval = session.query(Approval) \
         .filter(Approval.account.has(Account.id == account.id),
-                Approval.activated) \
+                Approval.activated,
+                ~Approval.approved) \
         .order_by(Approval.created_at.desc()) \
         .first()
     if not approval:
@@ -92,10 +93,11 @@ def is_approved(id: uuid.UUID) -> Response:
         res = False
     else:
         res = True
-    return jsonify(result=res)
+    return jsonify(success=res)
 
 
 @api.route('/approvals/<uuidhex:id>/decrypt/', methods=['POST'])
+@authorized
 def approvals(id: uuid.UUID) -> Response:
     try:
         approval = session.query(Approval) \
@@ -111,7 +113,9 @@ def approvals(id: uuid.UUID) -> Response:
         return jsonify(
             success=True,
             name=approval.account.name,
-            passphrase=approval.account.decrypt(payload['passphrase'])
+            passphrase=approval.account.decrypt(
+                passphrase=payload['passphrase']
+            )
         )
     except Exception as e:
         print(e)
